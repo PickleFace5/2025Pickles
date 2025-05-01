@@ -15,17 +15,11 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import edu.wpi.first.hal.FRCNetComm.tInstances;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,7 +32,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -48,10 +41,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.generated.TunerConstants;
+import frc.robot.config.DrivetrainConfiguration;
+import frc.robot.config.RobotConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOInputsAutoLogged;
-import frc.robot.subsystems.drive.gyro.GyroType;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -59,56 +52,12 @@ import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import org.ironmaple.simulation.drivesims.COTS;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.VisionConsumer {
-  // TunerConstants doesn't include these constants, so they are declared locally
-  public static final double ODOMETRY_FREQUENCY =
-      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
-  public static final double DRIVE_BASE_RADIUS =
-      Math.max(
-          Math.max(
-              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-              Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
-          Math.max(
-              Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-              Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
-
-  // PathPlanner config constants
-  private static final double ROBOT_MASS_KG = 74.088;
-  private static final double ROBOT_MOI = 6.883;
-  private static final double WHEEL_COF = 1.2;
-  private static final RobotConfig PP_CONFIG =
-      new RobotConfig(
-          ROBOT_MASS_KG,
-          ROBOT_MOI,
-          new ModuleConfig(
-              TunerConstants.FrontLeft.WheelRadius,
-              TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-              WHEEL_COF,
-              DCMotor.getKrakenX60Foc(1)
-                  .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-              TunerConstants.FrontLeft.SlipCurrent,
-              1),
-          getModuleTranslations());
-
-  public static final GyroType gyro = GyroType.PIGEON_2;
-
-  public static final DriveTrainSimulationConfig mapleSimConfig =
-      DriveTrainSimulationConfig.Default()
-          .withGyro(gyro::getGyroSimulation)
-          .withSwerveModule(
-              COTS.ofMark4i(
-                  DCMotor.getKrakenX60Foc(1),
-                  DCMotor.getKrakenX60Foc(1),
-                  COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
-                  2))
-          .withTrackLengthTrackWidth(Inches.of(24), Inches.of(24))
-          .withBumperSize(Inches.of(37), Inches.of(37))
-          .withRobotMass(Kilograms.of(ROBOT_MASS_KG));
+  private final DrivetrainConfiguration constants;
+  public final double odometryFrequency;
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -118,8 +67,6 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
-  private final SwerveDriveKinematics kinematics =
-      new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
   private final SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
@@ -128,27 +75,30 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private final SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-
+  private final SwerveDrivePoseEstimator poseEstimator;
   private final Consumer<Pose2d> resetSimulationPoseCallback;
 
   public DriveSubsystem(
+      RobotConstants constants,
       GyroIO gyroIO,
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
       ModuleIO brModuleIO,
       Consumer<Pose2d> resetSimulationPoseCallback) {
+    this.constants = constants.getDrivetrainConfiguration();
     this.gyroIO = gyroIO;
     this.resetSimulationPoseCallback = resetSimulationPoseCallback;
-    modules[0] = new ModuleSubsystem(flModuleIO, 0, TunerConstants.FrontLeft);
-    modules[1] = new ModuleSubsystem(frModuleIO, 1, TunerConstants.FrontRight);
-    modules[2] = new ModuleSubsystem(blModuleIO, 2, TunerConstants.BackLeft);
-    modules[3] = new ModuleSubsystem(brModuleIO, 3, TunerConstants.BackRight);
 
-    // Usage reporting for swerve template
-    HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
+    odometryFrequency = this.constants.supportsPro() ? 250.0 : 100.0;
+    poseEstimator =
+        new SwerveDrivePoseEstimator(
+            this.constants.getKinematics(), rawGyroRotation, lastModulePositions, new Pose2d());
+
+    modules[0] = new ModuleSubsystem(flModuleIO, this.constants.getSwerveModuleConfigurations()[0]);
+    modules[1] = new ModuleSubsystem(frModuleIO, this.constants.getSwerveModuleConfigurations()[1]);
+    modules[2] = new ModuleSubsystem(blModuleIO, this.constants.getSwerveModuleConfigurations()[2]);
+    modules[3] = new ModuleSubsystem(brModuleIO, this.constants.getSwerveModuleConfigurations()[3]);
 
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
@@ -161,7 +111,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         this::runVelocity,
         new PPHolonomicDriveController(
             new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        PP_CONFIG,
+        constants.getPathPlannerConfig(),
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
@@ -230,7 +180,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
       } else {
         // Use the angle delta from the kinematics and module deltas
-        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+        Twist2d twist = constants.getKinematics().toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
 
@@ -250,8 +200,8 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   public void runVelocity(ChassisSpeeds speeds) {
     // Calculate module setpoints
     speeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
+    SwerveModuleState[] setpointStates = constants.getKinematics().toSwerveModuleStates(speeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, constants.getMaxChassisSpeed());
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -287,7 +237,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     for (int i = 0; i < 4; i++) {
       headings[i] = getModuleTranslations()[i].getAngle();
     }
-    kinematics.resetHeadings(headings);
+    constants.getKinematics().resetHeadings(headings);
     stop();
   }
 
@@ -325,7 +275,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   private ChassisSpeeds getChassisSpeeds() {
-    return kinematics.toChassisSpeeds(getModuleStates());
+    return constants.getKinematics().toChassisSpeeds(getModuleStates());
   }
 
   /** Returns the position of each module in radians. */
@@ -335,6 +285,13 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
       values[i] = modules[i].getWheelRadiusCharacterizationPosition();
     }
     return values;
+  }
+
+  public double getDriveBaseRadius() {
+    var locations = constants.getModuleLocations();
+    return Math.max(
+        Math.max(locations[0].getNorm(), locations[1].getNorm()),
+        Math.max(locations[2].getNorm(), locations[3].getNorm()));
   }
 
   /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
@@ -374,22 +331,17 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
-    return TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    return constants.getMaxChassisSpeed().in(MetersPerSecond);
   }
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+    return constants.getMaxChassisAngularSpeed().in(RadiansPerSecond);
   }
 
   /** Returns an array of module translations. */
-  public static Translation2d[] getModuleTranslations() {
-    return new Translation2d[] {
-      new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-      new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-      new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-      new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
-    };
+  public Translation2d[] getModuleTranslations() {
+    return constants.getModuleLocations();
   }
 
   @Override

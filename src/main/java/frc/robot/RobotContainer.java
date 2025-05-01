@@ -13,8 +13,6 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.drive.DriveSubsystem.mapleSimConfig;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,7 +25,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.generated.TunerConstants;
+import frc.robot.config.DrivetrainConfiguration;
+import frc.robot.config.RobotConstants;
+import frc.robot.config.RobotIdentity;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.drive.gyro.*;
 import frc.robot.subsystems.drive.module.ModuleIO;
@@ -61,16 +61,23 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
+    RobotConstants constants = RobotConstants.getRobotConstants(RobotIdentity.getIdentity());
+    DrivetrainConfiguration swerveConfig = constants.getDrivetrainConfiguration();
+
+    switch (RobotIdentity.getMode()) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         driveSubsystem =
             new DriveSubsystem(
-                DriveSubsystem.gyro.createIO(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight),
+                constants,
+                swerveConfig
+                    .getGyroConfiguration()
+                    .getGyroType()
+                    .createIO(constants.getDrivetrainConfiguration().getGyroConfiguration()),
+                new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[0]),
+                new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[1]),
+                new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[2]),
+                new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[3]),
                 (robotPose) -> {});
         new VisionSubsystem(
             driveSubsystem,
@@ -81,15 +88,25 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         driveSimulation =
-            new SwerveDriveSimulation(mapleSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
+            new SwerveDriveSimulation(
+                constants.getMapleSimConfig(), new Pose2d(3, 3, Rotation2d.kZero));
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         driveSubsystem =
             new DriveSubsystem(
+                constants,
                 new GyroIOSim(driveSimulation.getGyroSimulation()) {},
-                new ModuleIOSim(driveSimulation.getModules()[0]) {},
-                new ModuleIOSim(driveSimulation.getModules()[1]) {},
-                new ModuleIOSim(driveSimulation.getModules()[2]) {},
-                new ModuleIOSim(driveSimulation.getModules()[3]) {},
+                new ModuleIOSim(
+                    swerveConfig.getSwerveModuleConfigurations()[0],
+                    driveSimulation.getModules()[0]) {},
+                new ModuleIOSim(
+                    swerveConfig.getSwerveModuleConfigurations()[1],
+                    driveSimulation.getModules()[1]) {},
+                new ModuleIOSim(
+                    swerveConfig.getSwerveModuleConfigurations()[2],
+                    driveSimulation.getModules()[2]) {},
+                new ModuleIOSim(
+                    swerveConfig.getSwerveModuleConfigurations()[3],
+                    driveSimulation.getModules()[3]) {},
                 driveSimulation::setSimulationWorldPose);
         new VisionSubsystem(
             driveSubsystem,
@@ -110,6 +127,7 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         driveSubsystem =
             new DriveSubsystem(
+                constants,
                 new GyroIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},

@@ -18,7 +18,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.generated.TunerConstants;
+import frc.robot.config.SwerveModuleConfiguration;
 import frc.robot.util.PhoenixUtil;
 import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
@@ -47,13 +47,16 @@ public class ModuleIOSim implements ModuleIO {
   private double driveAppliedVolts = 0.0;
   private double turnAppliedVolts = 0.0;
 
-  public ModuleIOSim(SwerveModuleSimulation moduleSimulation) {
+  public ModuleIOSim(SwerveModuleConfiguration constants, SwerveModuleSimulation moduleSimulation) {
     this.moduleSimulation = moduleSimulation;
     this.driveMotor =
         moduleSimulation
             .useGenericMotorControllerForDrive()
-            .withCurrentLimit(Amps.of(TunerConstants.FrontLeft.SlipCurrent));
-    this.turnMotor = moduleSimulation.useGenericControllerForSteer().withCurrentLimit(Amps.of(20));
+            .withCurrentLimit(constants.getDriveMotorStatorCurrent());
+    this.turnMotor =
+        moduleSimulation
+            .useGenericControllerForSteer()
+            .withCurrentLimit(constants.getSteerMotorStatorCurrent());
 
     this.driveController = new PIDController(0.05, 0.0, 0.0);
     this.turnController = new PIDController(8.0, 0.0, 0.0);

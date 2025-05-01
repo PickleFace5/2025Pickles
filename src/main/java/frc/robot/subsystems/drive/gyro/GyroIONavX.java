@@ -13,22 +13,24 @@
 
 package frc.robot.subsystems.drive.gyro;
 
+import static edu.wpi.first.units.Units.Hertz;
+
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.config.GyroConfiguration;
 import frc.robot.subsystems.drive.PhoenixOdometryThread;
 import java.util.Queue;
 
 /** IO implementation for <a href="https://pdocs.kauailabs.com/navx-mxp/">navX2-MXP</a>. */
 public class GyroIONavX implements GyroIO {
-  private final AHRS navX =
-      new AHRS(NavXComType.kMXP_SPI, (byte) DriveSubsystem.ODOMETRY_FREQUENCY);
+  private final AHRS navX;
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
 
-  public GyroIONavX() {
+  public GyroIONavX(GyroConfiguration constants) {
+    navX = new AHRS(NavXComType.kMXP_SPI, (byte) constants.getPollingRate().in(Hertz));
     yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
     yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(navX::getYaw);
   }

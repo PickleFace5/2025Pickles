@@ -13,6 +13,8 @@
 
 package frc.robot.subsystems.drive.gyro;
 
+import static edu.wpi.first.units.Units.*;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
@@ -22,8 +24,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.config.GyroConfiguration;
 import frc.robot.subsystems.drive.PhoenixOdometryThread;
 import java.util.Queue;
 
@@ -32,23 +33,24 @@ import java.util.Queue;
  * 2.0</a>.
  */
 public class GyroIOPigeon2 implements GyroIO {
-  private final Pigeon2 pigeon =
-      new Pigeon2(
-          TunerConstants.DrivetrainConstants.Pigeon2Id,
-          TunerConstants.DrivetrainConstants.CANBusName);
-  private final StatusSignal<Angle> yaw = pigeon.getYaw();
+  private final StatusSignal<Angle> yaw;
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
-  private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
+  private final StatusSignal<AngularVelocity> yawVelocity;
 
-  public GyroIOPigeon2() {
-    pigeon.getConfigurator().apply(new Pigeon2Configuration());
-    pigeon.getConfigurator().setYaw(0.0);
-    yaw.setUpdateFrequency(DriveSubsystem.ODOMETRY_FREQUENCY);
-    yawVelocity.setUpdateFrequency(50.0);
-    pigeon.optimizeBusUtilization();
-    yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-    yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getYaw());
+  public GyroIOPigeon2(GyroConfiguration constants) {
+    var canDeviceId = constants.getGyroCanDeviceId();
+    try (Pigeon2 pigeon = new Pigeon2(canDeviceId.getDeviceNumber(), canDeviceId.getBus())) {
+      yaw = pigeon.getYaw();
+      yawVelocity = pigeon.getAngularVelocityZWorld();
+      pigeon.getConfigurator().apply(new Pigeon2Configuration());
+      pigeon.getConfigurator().setYaw(0.0);
+      yaw.setUpdateFrequency(constants.getPollingRate().in(Hertz));
+      yawVelocity.setUpdateFrequency(50.0);
+      pigeon.optimizeBusUtilization();
+      yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+      yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getYaw());
+    }
   }
 
   @Override

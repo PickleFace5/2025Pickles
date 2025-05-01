@@ -269,7 +269,7 @@ public class DriveCommands {
                         wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                       }
                       double wheelRadius =
-                          (state.gyroDelta * DriveSubsystem.DRIVE_BASE_RADIUS) / wheelDelta;
+                          (state.gyroDelta * driveSubsystem.getDriveBaseRadius()) / wheelDelta;
 
                       NumberFormat formatter = new DecimalFormat("#0.000");
                       System.out.println(
