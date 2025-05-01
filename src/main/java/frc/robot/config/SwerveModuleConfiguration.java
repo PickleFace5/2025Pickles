@@ -1,7 +1,6 @@
 package frc.robot.config;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
@@ -31,7 +30,6 @@ public class SwerveModuleConfiguration {
   private final double steerGearRatio;
   private final double couplingGearRatio;
   private final Distance wheelRadius;
-  private final Translation2d location;
   private final Slot0Configs driveMotorGains;
   private final Slot0Configs steerMotorGains;
   private final ClosedLoopOutputType driveClosedLoopOutput;
@@ -62,7 +60,6 @@ public class SwerveModuleConfiguration {
     this.steerGearRatio = builder.steerGearRatio;
     this.couplingGearRatio = builder.couplingGearRatio;
     this.wheelRadius = builder.wheelRadius;
-    this.location = builder.location;
     this.driveMotorGains = builder.driveMotorGains;
     this.steerMotorGains = builder.steerMotorGains;
     this.driveClosedLoopOutput = builder.driveClosedLoopOutput;
@@ -94,7 +91,6 @@ public class SwerveModuleConfiguration {
     private double steerGearRatio = 1.0;
     private double couplingGearRatio = 1.0;
     private Distance wheelRadius = Units.Inches.of(2);
-    private Translation2d location = new Translation2d();
     private Slot0Configs driveMotorGains = new Slot0Configs();
     private Slot0Configs steerMotorGains = new Slot0Configs();
     private ClosedLoopOutputType driveClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -161,11 +157,6 @@ public class SwerveModuleConfiguration {
 
     public Builder setWheelRadius(Distance radius) {
       this.wheelRadius = radius;
-      return this;
-    }
-
-    public Builder setLocation(Translation2d location) {
-      this.location = location;
       return this;
     }
 
@@ -302,10 +293,6 @@ public class SwerveModuleConfiguration {
 
   public Distance getWheelRadius() {
     return wheelRadius;
-  }
-
-  public Translation2d getLocation() {
-    return location;
   }
 
   public Slot0Configs getDriveMotorGains() {

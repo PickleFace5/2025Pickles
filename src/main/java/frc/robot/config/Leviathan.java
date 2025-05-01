@@ -186,9 +186,6 @@ public class Leviathan implements RobotConstants {
                       .setSteerGearRatio(STEER_GEAR_RATIO)
                       .setCouplingGearRatio(COUPLING_GEAR_RATIO)
                       .setWheelRadius(WHEEL_RADIUS)
-                      .setLocation(
-                          new Translation2d(
-                              WHEELBASE_LENGTH_METERS.div(2), WHEELBASE_LENGTH_METERS.div(2)))
                       .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
                       .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
                       .setDriveClosedLoopOutput(
@@ -199,7 +196,7 @@ public class Leviathan implements RobotConstants {
                       .setDriveMotorStatorCurrent(Amps.of(80.0))
                       .setEnableDriveMotorSupplyCurrent(true)
                       .setEnableDriveMotorStatorCurrent(true)
-                      .setDriveMotorInverted(false)
+                      .setDriveMotorInverted(true)
                       .setSteerMotorSupplyCurrent(Amps.of(40.0))
                       .setSteerMotorStatorCurrent(Amps.of(60.0))
                       .setEnableSteerMotorSupplyCurrent(true)
@@ -221,10 +218,6 @@ public class Leviathan implements RobotConstants {
                       .setSteerGearRatio(STEER_GEAR_RATIO)
                       .setCouplingGearRatio(COUPLING_GEAR_RATIO)
                       .setWheelRadius(WHEEL_RADIUS)
-                      .setLocation(
-                          new Translation2d(
-                              WHEELBASE_LENGTH_METERS.div(2),
-                              WHEELBASE_LENGTH_METERS.div(2).unaryMinus()))
                       .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
                       .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
                       .setDriveClosedLoopOutput(
@@ -235,7 +228,7 @@ public class Leviathan implements RobotConstants {
                       .setDriveMotorStatorCurrent(Amps.of(80.0))
                       .setEnableDriveMotorSupplyCurrent(true)
                       .setEnableDriveMotorStatorCurrent(true)
-                      .setDriveMotorInverted(false)
+                      .setDriveMotorInverted(true)
                       .setSteerMotorSupplyCurrent(Amps.of(40.0))
                       .setSteerMotorStatorCurrent(Amps.of(60.0))
                       .setEnableSteerMotorSupplyCurrent(true)
@@ -257,10 +250,6 @@ public class Leviathan implements RobotConstants {
                       .setSteerGearRatio(STEER_GEAR_RATIO)
                       .setCouplingGearRatio(COUPLING_GEAR_RATIO)
                       .setWheelRadius(WHEEL_RADIUS)
-                      .setLocation(
-                          new Translation2d(
-                              WHEELBASE_LENGTH_METERS.div(2).unaryMinus(),
-                              WHEELBASE_LENGTH_METERS.div(2)))
                       .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
                       .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
                       .setDriveClosedLoopOutput(
@@ -271,7 +260,7 @@ public class Leviathan implements RobotConstants {
                       .setDriveMotorStatorCurrent(Amps.of(80.0))
                       .setEnableDriveMotorSupplyCurrent(true)
                       .setEnableDriveMotorStatorCurrent(true)
-                      .setDriveMotorInverted(false)
+                      .setDriveMotorInverted(true)
                       .setSteerMotorSupplyCurrent(Amps.of(40.0))
                       .setSteerMotorStatorCurrent(Amps.of(60.0))
                       .setEnableSteerMotorSupplyCurrent(true)
@@ -293,10 +282,6 @@ public class Leviathan implements RobotConstants {
                       .setSteerGearRatio(STEER_GEAR_RATIO)
                       .setCouplingGearRatio(COUPLING_GEAR_RATIO)
                       .setWheelRadius(WHEEL_RADIUS)
-                      .setLocation(
-                          new Translation2d(
-                              WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus(),
-                              WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus()))
                       .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
                       .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
                       .setDriveClosedLoopOutput(
@@ -307,7 +292,7 @@ public class Leviathan implements RobotConstants {
                       .setDriveMotorStatorCurrent(Amps.of(80.0))
                       .setEnableDriveMotorSupplyCurrent(true)
                       .setEnableDriveMotorStatorCurrent(true)
-                      .setDriveMotorInverted(false)
+                      .setDriveMotorInverted(true)
                       .setSteerMotorSupplyCurrent(Amps.of(40.0))
                       .setSteerMotorStatorCurrent(Amps.of(60.0))
                       .setEnableSteerMotorSupplyCurrent(true)

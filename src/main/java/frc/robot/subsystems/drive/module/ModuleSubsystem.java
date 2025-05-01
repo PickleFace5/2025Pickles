@@ -72,7 +72,7 @@ public class ModuleSubsystem {
   public void runSetpoint(SwerveModuleState state) {
     // Optimize velocity setpoint
     state.optimize(getAngle());
-    state.cosineScale(inputs.turnPosition);
+    if (constants.applyCosineCompensation()) state.cosineScale(inputs.turnPosition);
 
     // Apply setpoints
     io.setDriveVelocity(state.speedMetersPerSecond / constants.getWheelRadius().in(Meters));
