@@ -14,7 +14,7 @@ public interface RobotConstants {
     return switch (robot) {
       case LEVIATHAN, SIMULATION -> new Leviathan();
       case METAL_MELODY -> new Leviathan();
-      case LARRY -> new Leviathan();
+      case LARRY -> new Larry();
     };
   }
 }

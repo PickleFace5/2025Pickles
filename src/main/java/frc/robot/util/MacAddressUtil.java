@@ -6,7 +6,7 @@ import java.util.Enumeration;
 public class MacAddressUtil {
   public static final String LEVIATHAN_MAC = "00-1A-2C-56-7D-4F";
   public static final String METAL_MELODY_MAC = "92-9B-20-68-07-62";
-  public static final String LARRY_MAC = "90-9B-20-68-07-62";
+  public static final String LARRY_MAC = "27-0C-FE-C4-66-05";
 
   @SuppressWarnings("CatchAndPrintStackTrace")
   public static String getMACAddress() {
@@ -27,7 +27,6 @@ public class MacAddressUtil {
               // (unless it is the final segment)
               macAddress.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
             }
-            System.out.println(macAddress);
             return macAddress.toString();
           } else {
             System.out.println("Address not accessible");

@@ -28,6 +28,8 @@ public enum RobotIdentity {
           case MacAddressUtil.LARRY_MAC -> {
             return LARRY;
           }
+          default -> throw new IllegalArgumentException(
+              "Robot with MAC address '" + mac + "' not supported!");
         }
       }
 
