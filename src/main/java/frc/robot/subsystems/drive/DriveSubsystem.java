@@ -19,7 +19,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.swerve.SwerveSetpoint;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -78,6 +81,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   private final SwerveDrivePoseEstimator poseEstimator;
   private final Consumer<Pose2d> resetSimulationPoseCallback;
 
+  private final SwerveSetpointGenerator setpointGenerator;
+  private SwerveSetpoint previousSetpoint;
+
   public DriveSubsystem(
       RobotConstants constants,
       GyroIO gyroIO,
@@ -131,6 +137,11 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    setpointGenerator =
+        new SwerveSetpointGenerator(constants.getPathPlannerConfig(), RotationsPerSecond.of(5));
+    previousSetpoint =
+        new SwerveSetpoint(getChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(4));
   }
 
   @Override
@@ -199,8 +210,8 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
    */
   public void runVelocity(ChassisSpeeds speeds) {
     // Calculate module setpoints
-    speeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = constants.getKinematics().toSwerveModuleStates(speeds);
+    previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
+    SwerveModuleState[] setpointStates = previousSetpoint.moduleStates();
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, constants.getMaxChassisSpeed());
 
     // Log unoptimized setpoints and setpoint speeds
