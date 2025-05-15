@@ -5,7 +5,7 @@ import java.util.Enumeration;
 
 public class MacAddressUtil {
   public static final String LEVIATHAN_MAC = "00-1A-2C-56-7D-4F";
-  public static final String METAL_MELODY_MAC = "92-9B-20-68-07-62";
+  public static final String METAL_MELODY_MAC = "00-80-2F-38-8D-70";
   public static final String LARRY_MAC = "27-0C-FE-C4-66-05";
 
   @SuppressWarnings("CatchAndPrintStackTrace")

@@ -13,7 +13,7 @@ public interface RobotConstants {
   static RobotConstants getRobotConstants(RobotIdentity robot) {
     return switch (robot) {
       case LEVIATHAN, SIMULATION -> new Leviathan();
-      case METAL_MELODY -> new Leviathan();
+      case METAL_MELODY -> new MetalMelody();
       case LARRY -> new Larry();
     };
   }
