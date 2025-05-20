@@ -106,31 +106,20 @@ public class Leviathan implements RobotConstants {
   private static final Angle BACK_LEFT_ENCODER_OFFSET = Rotations.of(-0.241943359375);
   private static final Angle BACK_RIGHT_ENCODER_OFFSET = Rotations.of(-0.06494140625);
 
-  private static final SwerveModuleConfiguration MASTER_MODULE_CONFIG = new SwerveModuleConfiguration.Builder()
-      .setEncoderInverted(false)
-      .setDriveGearRatio(DRIVE_GEAR_RATIO)
-      .setSteerGearRatio(STEER_GEAR_RATIO)
-      .setCouplingGearRatio(COUPLING_GEAR_RATIO)
-      .setWheelRadius(WHEEL_RADIUS)
-      .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
-      .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
-      .setDriveClosedLoopOutput(SwerveModuleConfiguration.ClosedLoopOutputType.Voltage)
-      .setSteerClosedLoopOutput(SwerveModuleConfiguration.ClosedLoopOutputType.Voltage)
-      .setDriveMotorSupplyCurrent(Amps.of(80.0))
-      .setDriveMotorStatorCurrent(Amps.of(80.0))
-      .setEnableDriveMotorSupplyCurrent(true)
-      .setEnableDriveMotorStatorCurrent(true)
-      .setDriveMotorInverted(true)
-      .setSteerMotorSupplyCurrent(Amps.of(40.0))
-      .setSteerMotorStatorCurrent(Amps.of(60.0))
-      .setEnableSteerMotorSupplyCurrent(true)
-      .setEnableSteerMotorStatorCurrent(true)
-      .setSteerMotorInverted(true)
-      .setSpeedAt12Volts(MAX_SPEED)
-      .setApplyCosineCompensation(true)
-      .setApplyCouplingCompensation(true)
-      .setFeedbackSource(SwerveModuleConfiguration.SteerFeedbackType.FusedCANcoder)
-      .build();
+  private static final SwerveModuleConfiguration MASTER_MODULE_CONFIG =
+      new SwerveModuleConfiguration.Builder()
+          .setDriveGearRatio(DRIVE_GEAR_RATIO)
+          .setSteerGearRatio(STEER_GEAR_RATIO)
+          .setCouplingGearRatio(COUPLING_GEAR_RATIO)
+          .setWheelRadius(WHEEL_RADIUS)
+          .setDriveMotorGains(new ConfigureSlot0Gains(0.2, 0.0, 0.0, 0.141, 0.82, 0.0))
+          .setSteerMotorGains(new ConfigureSlot0Gains(100, 0.0, 0.3, 0.14, 1.91, 0.0))
+          .setDriveMotorInverted(true)
+          .setSteerMotorStatorCurrent(Amps.of(60.0))
+          .setSteerMotorInverted(true)
+          .setSpeedAt12Volts(MAX_SPEED)
+          .setFeedbackSource(SwerveModuleConfiguration.SteerFeedbackType.FusedCANcoder)
+          .build();
 
   // MapleSim Configuration
   private static final DriveTrainSimulationConfig mapleSimConfig =
@@ -161,77 +150,68 @@ public class Leviathan implements RobotConstants {
           MODULE_LOCATIONS);
 
   // Robot configuration
-  private final DrivetrainConfiguration drivetrainConfiguration;
-
-  public Leviathan() {
-
-    drivetrainConfiguration =
-        new DrivetrainConfiguration.Builder()
-            .setCANbusName(CANIVORE_NAME)
-            .setWheelRadius(WHEEL_RADIUS)
-            // In order of front left, front right, back left, back right
-            .setModuleLocations(MODULE_LOCATIONS)
-            .setDiscretizeChassisSpeeds(true)
-            .setMaxChassisSpeed(MAX_SPEED)
-            .setMaxChassisAccel(MAX_ACCEL)
-            .setMaxChassisAngularSpeed(
-                RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / WHEEL_RADIUS.in(Meters)))
-            .setMaxChassisAngularAccel(
-                RadiansPerSecondPerSecond.of(
-                    Math.pow(MAX_SPEED.in(MetersPerSecond), 2) / WHEEL_RADIUS.in(Meters)))
-            .setKinematics(
-                new SwerveDriveKinematics(
-                    new Translation2d(
-                        WHEELBASE_LENGTH_METERS.div(2), WHEEL_TRACK_WIDTH_METERS.div(2)),
-                    new Translation2d(
-                        WHEELBASE_LENGTH_METERS.div(2),
-                        WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus()),
-                    new Translation2d(
-                        WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus(),
-                        WHEEL_TRACK_WIDTH_METERS.div(2)),
-                    new Translation2d(
-                        WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus(),
-                        WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus())))
-            .setGyroConfiguration(
-                new GyroConfiguration.Builder()
-                    .setGyroType(GyroConfiguration.GyroType.PIGEON_2)
-                    .setPollingRate(Hertz.of(250))
-                    .setGyroCanDeviceId(GYRO)
-                    .build())
-            // In order of front left, front right, back left, back right
-            .setSwerveModuleConfigurations(
-                new SwerveModuleConfiguration[] {
-                  new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
-                      .setName("Front Left")
-                      .setDriveCanDeviceId(FRONT_LEFT_DRIVE_MOTOR)
-                      .setSteerCanDeviceId(FRONT_LEFT_STEER_MOTOR)
-                      .setEncoderCanDeviceId(FRONT_LEFT_STEER_ENCODER)
-                      .setEncoderOffset(FRONT_LEFT_ENCODER_OFFSET)
-                      .build(),
-                  new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
-                      .setName("Front Right")
-                      .setDriveCanDeviceId(FRONT_RIGHT_DRIVE_MOTOR)
-                      .setSteerCanDeviceId(FRONT_RIGHT_STEER_MOTOR)
-                      .setEncoderCanDeviceId(FRONT_RIGHT_STEER_ENCODER)
-                      .setEncoderOffset(FRONT_RIGHT_ENCODER_OFFSET)
-                      .build(),
-                  new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
-                      .setName("Back Left")
-                      .setDriveCanDeviceId(BACK_LEFT_DRIVE_MOTOR)
-                      .setSteerCanDeviceId(BACK_LEFT_STEER_MOTOR)
-                      .setEncoderCanDeviceId(BACK_LEFT_STEER_ENCODER)
-                      .setEncoderOffset(BACK_LEFT_ENCODER_OFFSET)
-                      .build(),
-                  new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
-                      .setName("Back Right")
-                      .setDriveCanDeviceId(BACK_RIGHT_DRIVE_MOTOR)
-                      .setSteerCanDeviceId(BACK_RIGHT_STEER_MOTOR)
-                      .setEncoderCanDeviceId(BACK_RIGHT_STEER_ENCODER)
-                      .setEncoderOffset(BACK_RIGHT_ENCODER_OFFSET)
-                      .build()
-                })
-            .build();
-  }
+  private final DrivetrainConfiguration drivetrainConfiguration =
+      new DrivetrainConfiguration.Builder(CANIVORE_NAME)
+          // In order of front left, front right, back left, back right
+          .setModuleLocations(MODULE_LOCATIONS)
+          .setDiscretizeChassisSpeeds(true)
+          .setMaxChassisSpeed(MAX_SPEED)
+          .setMaxChassisAccel(MAX_ACCEL)
+          .setMaxChassisAngularSpeed(
+              RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / WHEEL_RADIUS.in(Meters)))
+          .setMaxChassisAngularAccel(
+              RadiansPerSecondPerSecond.of(
+                  Math.pow(MAX_SPEED.in(MetersPerSecond), 2) / WHEEL_RADIUS.in(Meters)))
+          .setKinematics(
+              new SwerveDriveKinematics(
+                  new Translation2d(
+                      WHEELBASE_LENGTH_METERS.div(2), WHEEL_TRACK_WIDTH_METERS.div(2)),
+                  new Translation2d(
+                      WHEELBASE_LENGTH_METERS.div(2), WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus()),
+                  new Translation2d(
+                      WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus(),
+                      WHEEL_TRACK_WIDTH_METERS.div(2)),
+                  new Translation2d(
+                      WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus(),
+                      WHEEL_TRACK_WIDTH_METERS.div(2).unaryMinus())))
+          .setGyroConfiguration(
+              new GyroConfiguration.Builder(GYRO_TYPE)
+                  .setPollingRate(Hertz.of(250))
+                  .setGyroCanDeviceId(GYRO)
+                  .build())
+          // In order of front left, front right, back left, back right
+          .setSwerveModuleConfigurations(
+              new SwerveModuleConfiguration[] {
+                new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
+                    .setName("Front Left")
+                    .setDriveCanDeviceId(FRONT_LEFT_DRIVE_MOTOR)
+                    .setSteerCanDeviceId(FRONT_LEFT_STEER_MOTOR)
+                    .setEncoderCanDeviceId(FRONT_LEFT_STEER_ENCODER)
+                    .setEncoderOffset(FRONT_LEFT_ENCODER_OFFSET)
+                    .build(),
+                new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
+                    .setName("Front Right")
+                    .setDriveCanDeviceId(FRONT_RIGHT_DRIVE_MOTOR)
+                    .setSteerCanDeviceId(FRONT_RIGHT_STEER_MOTOR)
+                    .setEncoderCanDeviceId(FRONT_RIGHT_STEER_ENCODER)
+                    .setEncoderOffset(FRONT_RIGHT_ENCODER_OFFSET)
+                    .build(),
+                new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
+                    .setName("Back Left")
+                    .setDriveCanDeviceId(BACK_LEFT_DRIVE_MOTOR)
+                    .setSteerCanDeviceId(BACK_LEFT_STEER_MOTOR)
+                    .setEncoderCanDeviceId(BACK_LEFT_STEER_ENCODER)
+                    .setEncoderOffset(BACK_LEFT_ENCODER_OFFSET)
+                    .build(),
+                new SwerveModuleConfiguration.Builder(MASTER_MODULE_CONFIG)
+                    .setName("Back Right")
+                    .setDriveCanDeviceId(BACK_RIGHT_DRIVE_MOTOR)
+                    .setSteerCanDeviceId(BACK_RIGHT_STEER_MOTOR)
+                    .setEncoderCanDeviceId(BACK_RIGHT_STEER_ENCODER)
+                    .setEncoderOffset(BACK_RIGHT_ENCODER_OFFSET)
+                    .build()
+              })
+          .build();
 
   @Override
   public DrivetrainConfiguration getDrivetrainConfiguration() {

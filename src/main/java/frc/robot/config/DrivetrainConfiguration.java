@@ -8,7 +8,6 @@ import edu.wpi.first.units.measure.*;
 public class DrivetrainConfiguration {
   private final String CANbusName;
   private final boolean supportsPro;
-  private final Distance wheelRadius;
   private final Translation2d[] moduleLocations;
   private final boolean discretizeChassisSpeeds;
   private final LinearVelocity maxChassisSpeed;
@@ -22,7 +21,6 @@ public class DrivetrainConfiguration {
   private DrivetrainConfiguration(Builder builder) {
     this.CANbusName = builder.CANbusName;
     this.supportsPro = builder.supportsPro;
-    this.wheelRadius = builder.wheelRadius;
     this.moduleLocations = builder.moduleLocations;
     this.discretizeChassisSpeeds = builder.discretizeChassisSpeeds;
     this.maxChassisSpeed = builder.maxChassisSpeed;
@@ -35,11 +33,10 @@ public class DrivetrainConfiguration {
   }
 
   public static class Builder {
-    private String CANbusName;
-    private boolean supportsPro;
-    private Distance wheelRadius;
+    private final String CANbusName;
+    private final boolean supportsPro;
     private Translation2d[] moduleLocations;
-    private boolean discretizeChassisSpeeds;
+    private boolean discretizeChassisSpeeds = true;
     private LinearVelocity maxChassisSpeed;
     private LinearAcceleration maxChassisAccel;
     private AngularVelocity maxChassisAngularSpeed;
@@ -48,14 +45,9 @@ public class DrivetrainConfiguration {
     private GyroConfiguration gyroConfiguration;
     private SwerveModuleConfiguration[] swerveModuleConfigurations;
 
-    public Builder setCANbusName(String CANbusName) {
+    public Builder(String CANbusName) {
       this.CANbusName = CANbusName;
-      return this;
-    }
-
-    public Builder setWheelRadius(Distance wheelRadius) {
-      this.wheelRadius = wheelRadius;
-      return this;
+      this.supportsPro = new CANBus(this.CANbusName).isNetworkFD();
     }
 
     public Builder setModuleLocations(Translation2d[] moduleLocations) {
@@ -105,7 +97,6 @@ public class DrivetrainConfiguration {
     }
 
     public DrivetrainConfiguration build() {
-      this.supportsPro = new CANBus(this.CANbusName).isNetworkFD();
       return new DrivetrainConfiguration(this);
     }
   }
@@ -116,10 +107,6 @@ public class DrivetrainConfiguration {
 
   public boolean supportsPro() {
     return supportsPro;
-  }
-
-  public Distance getWheelRadius() {
-    return wheelRadius;
   }
 
   public Translation2d[] getModuleLocations() {

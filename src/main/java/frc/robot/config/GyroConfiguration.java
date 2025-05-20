@@ -42,13 +42,12 @@ public class GyroConfiguration {
   }
 
   public static class Builder {
-    private GyroType gyroType;
+    private final GyroType gyroType;
     private Frequency pollingRate;
     private CanDeviceId gyroCanDeviceId;
 
-    public Builder setGyroType(GyroType gyroType) {
+    public Builder(GyroType gyroType) {
       this.gyroType = gyroType;
-      return this;
     }
 
     public Builder setPollingRate(Frequency pollingRate) {

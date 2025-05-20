@@ -106,11 +106,11 @@ public class SwerveModuleConfiguration {
     private boolean enableSteerMotorStatorCurrent = true;
     private boolean steerMotorInverted = false;
     private LinearVelocity speedAt12Volts = Units.MetersPerSecond.of(4.0);
-    private boolean applyCosineCompensation = false;
-    private boolean appleCouplingCompensation = false;
+    private boolean applyCosineCompensation = true;
+    private boolean appleCouplingCompensation = true;
     private SteerFeedbackType feedbackSource = SteerFeedbackType.RemoteCANcoder;
 
-    public Builder() { }
+    public Builder() {}
 
     public Builder(SwerveModuleConfiguration config) {
       this.name = config.name;
@@ -142,7 +142,6 @@ public class SwerveModuleConfiguration {
       this.appleCouplingCompensation = config.appleCouplingCompensation;
       this.feedbackSource = config.feedbackSource;
     }
-
 
     public Builder setName(String name) {
       this.name = name;
