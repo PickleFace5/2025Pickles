@@ -110,6 +110,40 @@ public class SwerveModuleConfiguration {
     private boolean appleCouplingCompensation = false;
     private SteerFeedbackType feedbackSource = SteerFeedbackType.RemoteCANcoder;
 
+    public Builder() { }
+
+    public Builder(SwerveModuleConfiguration config) {
+      this.name = config.name;
+      this.driveCanDeviceId = config.driveCanDeviceId;
+      this.steerCanDeviceId = config.steerCanDeviceId;
+      this.encoderCanDeviceId = config.encoderCanDeviceId;
+      this.encoderOffset = config.encoderOffset;
+      this.encoderInverted = config.encoderInverted;
+      this.driveGearRatio = config.driveGearRatio;
+      this.steerGearRatio = config.steerGearRatio;
+      this.couplingGearRatio = config.couplingGearRatio;
+      this.wheelRadius = config.wheelRadius;
+      this.driveMotorGains = config.driveMotorGains;
+      this.steerMotorGains = config.steerMotorGains;
+      this.driveClosedLoopOutput = config.driveClosedLoopOutput;
+      this.steerClosedLoopOutput = config.steerClosedLoopOutput;
+      this.driveMotorSupplyCurrent = config.driveMotorSupplyCurrent;
+      this.driveMotorStatorCurrent = config.driveMotorStatorCurrent;
+      this.enableDriveMotorSupplyCurrent = config.enableDriveMotorSupplyCurrent;
+      this.enableDriveMotorStatorCurrent = config.enableDriveMotorStatorCurrent;
+      this.driveMotorInverted = config.driveMotorInverted;
+      this.steerMotorSupplyCurrent = config.steerMotorSupplyCurrent;
+      this.steerMotorStatorCurrent = config.steerMotorStatorCurrent;
+      this.enableSteerMotorSupplyCurrent = config.enableSteerMotorSupplyCurrent;
+      this.enableSteerMotorStatorCurrent = config.enableSteerMotorStatorCurrent;
+      this.steerMotorInverted = config.steerMotorInverted;
+      this.speedAt12Volts = config.speedAt12Volts;
+      this.applyCosineCompensation = config.applyCosineCompensation;
+      this.appleCouplingCompensation = config.appleCouplingCompensation;
+      this.feedbackSource = config.feedbackSource;
+    }
+
+
     public Builder setName(String name) {
       this.name = name;
       return this;
