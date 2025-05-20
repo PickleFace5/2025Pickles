@@ -107,6 +107,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     modules[3] = new ModuleSubsystem(brModuleIO, this.constants.getSwerveModuleConfigurations()[3]);
 
     // Start odometry thread
+    PhoenixOdometryThread.setCANFD(this.constants.supportsPro());
     PhoenixOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner

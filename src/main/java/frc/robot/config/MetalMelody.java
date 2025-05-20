@@ -2,6 +2,7 @@ package frc.robot.config;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -120,31 +121,23 @@ public class MetalMelody implements RobotConstants {
           .withRobotMass(ROBOT_MASS);
 
   // PathPlanner Config
-  private static RobotConfig pathplannerConfig;
-  //      new RobotConfig(
-  //          ROBOT_MASS,
-  //          ROBOT_MOI,
-  //          new ModuleConfig(
-  //              WHEEL_RADIUS,
-  //              MAX_SPEED,
-  //              COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
-  //              DCMotor.getKrakenX60Foc(1).withReduction(DRIVE_GEAR_RATIO),
-  //              Amps.of(80),
-  //              1),
-  //          MODULE_LOCATIONS);
+  private static final RobotConfig pathplannerConfig =
+      new RobotConfig(
+          ROBOT_MASS,
+          ROBOT_MOI,
+          new ModuleConfig(
+              WHEEL_RADIUS,
+              MAX_SPEED,
+              COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
+              DCMotor.getKrakenX60Foc(1).withReduction(DRIVE_GEAR_RATIO),
+              Amps.of(80),
+              1),
+          MODULE_LOCATIONS);
 
   // Robot configuration
   private final DrivetrainConfiguration drivetrainConfiguration;
 
   public MetalMelody() {
-
-    try {
-      pathplannerConfig = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      // Handle exception as needed
-      e.printStackTrace();
-    }
-
     drivetrainConfiguration =
         new DrivetrainConfiguration.Builder()
             .setCANbusName(CANBUS_NAME)

@@ -42,7 +42,7 @@ public class PhoenixOdometryThread extends Thread {
   private final List<Queue<Double>> genericQueues = new ArrayList<>();
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
-  private static final boolean isCANFD = true;
+  private static boolean isCANFD = false;
   private static PhoenixOdometryThread instance = null;
 
   public static PhoenixOdometryThread getInstance() {
@@ -50,6 +50,10 @@ public class PhoenixOdometryThread extends Thread {
       instance = new PhoenixOdometryThread();
     }
     return instance;
+  }
+
+  public static void setCANFD(boolean isCANFD) {
+    PhoenixOdometryThread.isCANFD = isCANFD;
   }
 
   private PhoenixOdometryThread() {
