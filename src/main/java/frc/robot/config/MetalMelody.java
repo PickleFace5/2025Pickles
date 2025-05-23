@@ -50,7 +50,7 @@ public class MetalMelody implements RobotConstants {
 
   /**
    * Wheel radius in meters. Accuracy in these measurements affects wheel odometry which measures
-   * distance as a function of the number of rotations * wheel circumference.
+   * distance as a function of the amount of rotations * wheel circumference.
    */
   private static final Distance WHEEL_RADIUS = Inches.of(1.97);
 
