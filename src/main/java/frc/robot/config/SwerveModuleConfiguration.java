@@ -1,7 +1,6 @@
 package frc.robot.config;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
@@ -36,7 +35,6 @@ public class SwerveModuleConfiguration {
   private final double driveGearRatio;
   private final double steerGearRatio;
   private final double couplingGearRatio;
-
 
   // Other physical properties
   private final Distance wheelRadius;

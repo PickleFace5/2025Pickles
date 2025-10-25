@@ -1,7 +1,6 @@
 package frc.robot.config;
 
 import com.ctre.phoenix6.CANBus;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.AngularAcceleration;
