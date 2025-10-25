@@ -1,7 +1,8 @@
 package frc.robot.config;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-import edu.wpi.first.units.*;
+
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -21,15 +22,27 @@ public class SwerveModuleConfiguration {
   }
 
   private final String name;
+
+  // CAN IDs
   private final CanDeviceId driveCanDeviceId;
   private final CanDeviceId steerCanDeviceId;
   private final CanDeviceId encoderCanDeviceId;
+
+  // Encoder config
   private final Angle encoderOffset;
   private final boolean encoderInverted;
+
+  // Gear ratios
   private final double driveGearRatio;
   private final double steerGearRatio;
   private final double couplingGearRatio;
+
+
+  // Other physical properties
   private final Distance wheelRadius;
+  private final LinearVelocity speedAt12Volts;
+
+  // Drive + steer configs
   private final Slot0Configs driveMotorGains;
   private final Slot0Configs steerMotorGains;
   private final ClosedLoopOutputType driveClosedLoopOutput;
@@ -44,9 +57,11 @@ public class SwerveModuleConfiguration {
   private final boolean enableSteerMotorSupplyCurrent;
   private final boolean enableSteerMotorStatorCurrent;
   private final boolean steerMotorInverted;
-  private final LinearVelocity speedAt12Volts;
+
+  // Module settings
   private final boolean applyCosineCompensation;
   private final boolean appleCouplingCompensation;
+
   private final SteerFeedbackType feedbackSource;
 
   private SwerveModuleConfiguration(Builder builder) {

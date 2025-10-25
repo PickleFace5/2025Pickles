@@ -5,6 +5,7 @@ public class CameraConfiguration {
     LIMELIGHT,
     PHOTON_VISION
   }
+
   private final String name;
   private final CameraType type;
   private int fps;
@@ -36,7 +37,6 @@ public class CameraConfiguration {
     public Builder setFov(double fov) {
       this.fov = fov;
       return this;
-
     }
 
     public CameraConfiguration build() {

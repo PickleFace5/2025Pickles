@@ -1,19 +1,31 @@
 package frc.robot.config;
 
 import com.ctre.phoenix6.CANBus;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 public class DrivetrainConfiguration {
-  private final String CANbusName;
+
+  // CANbus settings
+  private final String CANbusName; // "rio" by default
   private final boolean supportsPro;
+
+  // Module locations (from the center of the robot)
   private final Translation2d[] moduleLocations;
+
+  // Chassis-specific settings
   private final boolean discretizeChassisSpeeds;
   private final LinearVelocity maxChassisSpeed;
   private final LinearAcceleration maxChassisAccel;
   private final AngularVelocity maxChassisAngularSpeed;
   private final AngularAcceleration maxChassisAngularAccel;
+
+  // Kinematics + Device configs
   private final SwerveDriveKinematics kinematics;
   private final GyroConfiguration gyroConfiguration;
   private final SwerveModuleConfiguration[] swerveModuleConfigurations;
@@ -33,7 +45,7 @@ public class DrivetrainConfiguration {
   }
 
   public static class Builder {
-    private final String CANbusName;
+    private String CANbusName = "rio";
     private final boolean supportsPro;
     private Translation2d[] moduleLocations;
     private boolean discretizeChassisSpeeds = true;

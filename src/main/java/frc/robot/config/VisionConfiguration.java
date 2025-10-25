@@ -1,5 +1,3 @@
 package frc.robot.config;
 
-public class VisionConfiguration {
-
-}
+public class VisionConfiguration {}
