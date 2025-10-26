@@ -1,7 +1,6 @@
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
-
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -16,6 +15,7 @@ public class VisionIOPhotonVision implements VisionIO {
   public final String name;
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  private final AprilTagFieldLayout tagLayout;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -23,10 +23,12 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param name The configured name of the camera.
    * @param robotToCamera The 3D position of the camera relative to the robot.
    */
-  public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
+  public VisionIOPhotonVision(
+      String name, Transform3d robotToCamera, AprilTagFieldLayout tagLayout) {
     camera = new PhotonCamera(name);
     this.name = name;
     this.robotToCamera = robotToCamera;
+    this.tagLayout = tagLayout;
   }
 
   @Override
@@ -80,7 +82,7 @@ public class VisionIOPhotonVision implements VisionIO {
         var target = result.targets.get(0);
 
         // Calculate robot pose
-        var tagPose = aprilTagLayout.getTagPose(target.fiducialId);
+        var tagPose = tagLayout.getTagPose(target.fiducialId);
         if (tagPose.isPresent()) {
           Transform3d fieldToTarget =
               new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());

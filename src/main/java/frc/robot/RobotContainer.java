@@ -13,7 +13,13 @@
 
 package frc.robot;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -28,20 +34,14 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.config.DrivetrainConfiguration;
 import frc.robot.config.RobotConstants;
 import frc.robot.config.RobotIdentity;
+import frc.robot.config.VisionConfiguration;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOSim;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionIOLimelight;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -52,6 +52,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final DriveSubsystem driveSubsystem;
+
   public SwerveDriveSimulation driveSimulation = null;
 
   // Controller
@@ -66,9 +67,10 @@ public class RobotContainer {
     // Get robot constants from MAC Address.
     RobotConstants constants = RobotConstants.getRobotConstants(RobotIdentity.getIdentity());
     DrivetrainConfiguration swerveConfig = constants.getDrivetrainConfiguration();
+    VisionConfiguration visionConfig = constants.getVisionConfiguration();
 
     switch (RobotIdentity.getMode()) {
-      case REAL:
+      case REAL -> {
         // Real robot, instantiate hardware IO implementations
         driveSubsystem =
             new DriveSubsystem(
@@ -82,13 +84,9 @@ public class RobotContainer {
                 new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[2]),
                 new ModuleIOTalonFX(swerveConfig.getSwerveModuleConfigurations()[3]),
                 (robotPose) -> {});
-        new VisionSubsystem(
-            driveSubsystem,
-            new VisionIOLimelight(VisionConstants.frontCamera, driveSubsystem::getRotation),
-            new VisionIOLimelight(VisionConstants.frontLeftCamera, driveSubsystem::getRotation),
-            new VisionIOLimelight(VisionConstants.frontRightCamera, driveSubsystem::getRotation));
-        break;
-      case SIM:
+        new VisionSubsystem(visionConfig, driveSubsystem, driveSubsystem::getPose);
+      }
+      case SIM -> {
         // Sim robot, instantiate physics sim IO implementations
         driveSimulation =
             new SwerveDriveSimulation(
@@ -112,21 +110,9 @@ public class RobotContainer {
                     driveSimulation.getModules()[3]) {},
                 driveSimulation::setSimulationWorldPose);
         new VisionSubsystem(
-            driveSubsystem,
-            VisionIOPhotonVisionSim.ofLimelight4(
-                VisionConstants.frontCamera,
-                VisionConstants.robotToFrontCam,
-                driveSimulation::getSimulatedDriveTrainPose),
-            VisionIOPhotonVisionSim.ofLimelight3A(
-                VisionConstants.frontLeftCamera,
-                VisionConstants.robotToFrontLeftCam,
-                driveSimulation::getSimulatedDriveTrainPose),
-            VisionIOPhotonVisionSim.ofLimelight3A(
-                VisionConstants.frontRightCamera,
-                VisionConstants.robotToFrontRightCam,
-                driveSimulation::getSimulatedDriveTrainPose));
-        break;
-      default:
+            visionConfig, driveSubsystem, () -> driveSimulation.getSimulatedDriveTrainPose());
+      }
+      default -> {
         // Replayed robot, disable IO implementations
         driveSubsystem =
             new DriveSubsystem(
@@ -137,8 +123,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 (robotPose) -> {});
-        new VisionSubsystem(driveSubsystem);
-        break;
+      }
     }
 
     // Set up auto routines

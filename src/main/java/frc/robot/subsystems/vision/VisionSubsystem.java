@@ -1,7 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,31 +9,69 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.config.CameraConfiguration;
+import frc.robot.config.VisionConfiguration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
   private final VisionConsumer consumer;
-  private final VisionIO[] io;
+  private VisionIO[] io = new VisionIO[0];
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+  private VisionConfiguration constants;
 
-  public VisionSubsystem(VisionConsumer visionConsumer, VisionIO... io) {
+  public VisionSubsystem(
+      VisionConfiguration constants, VisionConsumer visionConsumer, Supplier<Pose2d> poseSupplier) {
+    this.constants = constants;
     this.consumer = visionConsumer;
-    this.io = io;
+
+    // Build VisionIO's
+    CameraConfiguration[] cameraConfigs = constants.getCameraConfigurations();
+    if (cameraConfigs != null) {
+      VisionIO[] io = new VisionIO[cameraConfigs.length];
+      for (int i = 0; i < cameraConfigs.length; i++) {
+        CameraConfiguration camera = cameraConfigs[i];
+        if (Robot.isReal()) {
+          switch (camera.getCameraType()) {
+            case LIMELIGHT -> io[i] =
+                new VisionIOLimelight(camera.getName(), () -> poseSupplier.get().getRotation());
+            case PHOTON_VISION -> io[i] =
+                new VisionIOPhotonVision(
+                    camera.getName(),
+                    camera.getRobotToCamera(),
+                    constants.getAprilTagFieldLayout());
+          }
+        } else {
+          io[i] =
+              new VisionIOPhotonVisionSim(
+                  camera.getName(),
+                  camera.getRobotToCamera(),
+                  poseSupplier,
+                  camera.getSimCameraProperties(),
+                  constants.getAprilTagFieldLayout());
+        }
+      }
+
+      this.io = io;
+    }
 
     // Initialize inputs
-    this.inputs = new VisionIOInputsAutoLogged[io.length];
+    this.inputs = new VisionIOInputsAutoLogged[this.io.length];
     for (int i = 0; i < inputs.length; i++) {
       inputs[i] = new VisionIOInputsAutoLogged();
     }
 
     // Initialize disconnected alerts
-    this.disconnectedAlerts = new Alert[io.length];
+    this.disconnectedAlerts = new Alert[this.io.length];
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
-          new Alert("Vision camera " + i + " is disconnected.", Alert.AlertType.kWarning);
+          new Alert(
+              "Vision camera " + cameraConfigs[i].getName() + " is disconnected.",
+              Alert.AlertType.kWarning);
     }
   }
 
@@ -74,7 +110,7 @@ public class VisionSubsystem extends SubsystemBase {
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = aprilTagLayout.getTagPose(tagId);
+        var tagPose = constants.getAprilTagFieldLayout().getTagPose(tagId);
         tagPose.ifPresent(tagPoses::add);
       }
 
@@ -84,15 +120,16 @@ public class VisionSubsystem extends SubsystemBase {
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
                 || (observation.tagCount() == 1
-                    && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
+                    && observation.ambiguity()
+                        > constants.getMaxAmbiguity()) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
-                    > maxZError // Must have realistic Z coordinate
+                    > constants.getMaxZError() // Must have realistic Z coordinate
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < 0.0
-                || observation.pose().getX() > aprilTagLayout.getFieldLength()
+                || observation.pose().getX() > constants.getAprilTagFieldLayout().getFieldLength()
                 || observation.pose().getY() < 0.0
-                || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+                || observation.pose().getY() > constants.getAprilTagFieldLayout().getFieldWidth();
 
         // Add pose to log
         robotPoses.add(observation.pose());
@@ -110,15 +147,17 @@ public class VisionSubsystem extends SubsystemBase {
         // Calculate standard deviations
         double stdDevFactor =
             Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
-        double linearStdDev = linearStdDevBaseline * stdDevFactor;
-        double angularStdDev = angularStdDevBaseline * stdDevFactor;
+        double linearStdDev = constants.getLinearStdDevBaseline() * stdDevFactor;
+        double angularStdDev = constants.getAngularStdDevBaseline() * stdDevFactor;
         if (observation.type() == VisionIO.PoseObservationType.MEGATAG_2) {
-          linearStdDev *= linearStdDevMegatag2Factor;
-          angularStdDev *= angularStdDevMegatag2Factor;
+          linearStdDev *= constants.getLinearStdDevMegatag2Factor();
+          angularStdDev *= constants.getAngularStdDevMegatag2Factor();
         }
-        if (cameraIndex < cameraStdDevFactors.length) {
-          linearStdDev *= cameraStdDevFactors[cameraIndex];
-          angularStdDev *= cameraStdDevFactors[cameraIndex];
+        CameraConfiguration[] cameraConfig = constants.getCameraConfigurations();
+        if (cameraIndex < cameraConfig.length) {
+          var camera = cameraConfig[cameraIndex];
+          linearStdDev *= camera.getStdDevFactor();
+          angularStdDev *= camera.getStdDevFactor();
         }
 
         // Send vision observation

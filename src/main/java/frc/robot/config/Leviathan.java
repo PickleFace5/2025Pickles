@@ -1,16 +1,37 @@
 package frc.robot.config;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.math.util.Units.degreesToRadians;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.robot.config.CameraConfiguration.CameraType;
 import frc.robot.util.drivers.CanDeviceId;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.photonvision.simulation.SimCameraProperties;
 
 public class Leviathan implements RobotConstants {
   private static final String CANIVORE_NAME = "Drivetrain";
@@ -35,6 +56,66 @@ public class Leviathan implements RobotConstants {
   private static final CanDeviceId BACK_RIGHT_DRIVE_MOTOR = new CanDeviceId(2, CANIVORE_NAME);
   private static final CanDeviceId BACK_RIGHT_STEER_MOTOR = new CanDeviceId(6, CANIVORE_NAME);
   private static final CanDeviceId BACK_RIGHT_STEER_ENCODER = new CanDeviceId(6, CANIVORE_NAME);
+
+  // ==================================================================================
+  // Vison Configuration
+  // ==================================================================================
+  private static final CameraConfiguration LIMELIGHT_FRONT = // Limelight 4
+      new CameraConfiguration.Builder(
+              "limelight-front",
+              CameraConfiguration.CameraType.LIMELIGHT,
+              new Transform3d(
+                  0.2398808004,
+                  0.0,
+                  0.2009021128,
+                  new Rotation3d(0.0, degreesToRadians(-20.0), 0.0)))
+          .setSimCameraProperties(
+              new SimCameraProperties()
+                  .setFPS(40)
+                  .setCalibration(1280, 960, Rotation2d.fromDegrees(82)))
+          .build();
+
+  private static final CameraConfiguration LIMELIGHT_BACK = // Limelight 4
+      new CameraConfiguration.Builder(
+              "limelight-back",
+              CameraType.LIMELIGHT,
+              new Transform3d(
+                  0.030842, 0.0, 0.980425, new Rotation3d(0.0, 0.0, degreesToRadians(180))))
+          .setSimCameraProperties(
+              new SimCameraProperties()
+                  .setFPS(40)
+                  .setCalibration(1280, 960, Rotation2d.fromDegrees(82)))
+          .build();
+
+  private static final CameraConfiguration LIMELIGHT_FR = // Limelight 3A
+      new CameraConfiguration.Builder(
+              "limelight-fr",
+              CameraType.LIMELIGHT,
+              new Transform3d(
+                  0.3055549388,
+                  -0.3039476268,
+                  0.2250257882,
+                  new Rotation3d(0.0, degreesToRadians(-15), degreesToRadians(-45))))
+          .setSimCameraProperties(
+              new SimCameraProperties()
+                  .setFPS(50)
+                  .setCalibration(640, 480, Rotation2d.fromDegrees(54.5)))
+          .build();
+
+  private static final CameraConfiguration LIMELIGHT_FL = // Limelight 3A
+      new CameraConfiguration.Builder(
+              "limelight-fl",
+              CameraType.LIMELIGHT,
+              new Transform3d(
+                  0.3055549388,
+                  0.3039476268,
+                  0.2250257882,
+                  new Rotation3d(0.0, degreesToRadians(-15), degreesToRadians(45))))
+          .setSimCameraProperties(
+              new SimCameraProperties()
+                  .setFPS(50)
+                  .setCalibration(640, 480, Rotation2d.fromDegrees(54.5)))
+          .build();
 
   // ==================================================================================
   // Physical Robot Constants
@@ -150,7 +231,7 @@ public class Leviathan implements RobotConstants {
           MODULE_LOCATIONS);
 
   // Robot configuration
-  private final DrivetrainConfiguration drivetrainConfiguration =
+  private static final DrivetrainConfiguration drivetrainConfiguration =
       new DrivetrainConfiguration.Builder(CANIVORE_NAME)
           // In order of front left, front right, back left, back right
           .setModuleLocations(MODULE_LOCATIONS)
@@ -213,9 +294,23 @@ public class Leviathan implements RobotConstants {
               })
           .build();
 
+  // Vision Configuration
+  private static final VisionConfiguration visionConfiguration =
+      new VisionConfiguration.Builder()
+          .setCameraConfigurations(
+              new CameraConfiguration[] {
+                LIMELIGHT_FRONT, LIMELIGHT_BACK, LIMELIGHT_FR, LIMELIGHT_FL
+              })
+          .build();
+
   @Override
   public DrivetrainConfiguration getDrivetrainConfiguration() {
     return drivetrainConfiguration;
+  }
+
+  @Override
+  public VisionConfiguration getVisionConfiguration() {
+    return visionConfiguration;
   }
 
   @Override

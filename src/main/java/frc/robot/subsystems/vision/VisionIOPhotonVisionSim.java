@@ -1,9 +1,7 @@
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
-
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -16,7 +14,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
 
   private final Supplier<Pose2d> poseSupplier;
 
-  public static VisionIOPhotonVisionSim ofLimelight4(
+  /*public static VisionIOPhotonVisionSim ofLimelight4(
       String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
     return new VisionIOPhotonVisionSim(
         name,
@@ -38,7 +36,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
             .setFPS(50)
             .setCalibration(640, 480, Rotation2d.fromDegrees(54.5))
             .setExposureTimeMs(18.87));
-  }
+  }*/
 
   /**
    * Creates a new VisionIOPhotonVisionSim.
@@ -50,14 +48,15 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
       String name,
       Transform3d robotToCamera,
       Supplier<Pose2d> poseSupplier,
-      SimCameraProperties cameraProperties) {
-    super(name, robotToCamera);
+      SimCameraProperties cameraProperties,
+      AprilTagFieldLayout tagLayout) {
+    super(name, robotToCamera, tagLayout);
     this.poseSupplier = poseSupplier;
 
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(aprilTagLayout);
+      visionSim.addAprilTags(tagLayout);
     }
 
     // Add sim camera

@@ -1,10 +1,13 @@
 package frc.robot.config;
 
-import com.pathplanner.lib.config.RobotConfig;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+
+import com.pathplanner.lib.config.RobotConfig;
 
 public interface RobotConstants {
   DrivetrainConfiguration getDrivetrainConfiguration();
+
+  VisionConfiguration getVisionConfiguration();
 
   DriveTrainSimulationConfig getMapleSimConfig();
 
