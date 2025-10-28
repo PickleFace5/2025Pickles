@@ -1,8 +1,7 @@
 package frc.robot.config;
 
-import org.photonvision.simulation.SimCameraProperties;
-
 import edu.wpi.first.math.geometry.Transform3d;
+import org.photonvision.simulation.SimCameraProperties;
 
 public class CameraConfiguration {
   public enum CameraType {

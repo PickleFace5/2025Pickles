@@ -44,7 +44,7 @@ public class DrivetrainConfiguration {
   }
 
   public static class Builder {
-    private String CANbusName = "rio";
+    private final String CANbusName;
     private final boolean supportsPro;
     private Translation2d[] moduleLocations;
     private boolean discretizeChassisSpeeds = true;
