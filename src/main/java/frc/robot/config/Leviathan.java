@@ -31,7 +31,10 @@ import frc.robot.config.CameraConfiguration.CameraType;
 import frc.robot.util.drivers.CanDeviceId;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.json.simple.parser.ParseException;
 import org.photonvision.simulation.SimCameraProperties;
+
+import java.io.IOException;
 
 public class Leviathan implements RobotConstants {
   private static final String CANIVORE_NAME = "Drivetrain";
@@ -176,7 +179,7 @@ public class Leviathan implements RobotConstants {
       };
 
   /** The maximum linear speed of the robot in meters per second. */
-  private static final LinearVelocity MAX_SPEED = MetersPerSecond.of(3.5);
+  private static final LinearVelocity MAX_SPEED = MetersPerSecond.of(4.6);
 
   /** The maximum linear acceleration of the robot in meters per second squared. */
   private static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(7.0);
