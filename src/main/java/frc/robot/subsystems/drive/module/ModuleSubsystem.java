@@ -56,8 +56,18 @@ public class ModuleSubsystem {
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
     odometryPositions = new SwerveModulePosition[sampleCount];
     for (int i = 0; i < sampleCount; i++) {
-      double positionMeters =
-          inputs.odometryDrivePositionsRad[i] * constants.getWheelRadius().in(Meters);
+      double wheelRad = inputs.odometryDrivePositionsRad[i];
+      double turnRad = inputs.odometryTurnPositions[i].getRadians();
+
+      // Convert coupling ratio from motor -> wheel space
+      double couplingWheelPerAz = constants.getCouplingGearRatio() / constants.getDriveGearRatio();
+
+      // Apply coupling correction in wheel radians
+      double correctedWheelRad = wheelRad + couplingWheelPerAz * turnRad;
+
+      // Wheel radians -> meters
+      double positionMeters = correctedWheelRad * constants.getWheelRadius().in(Meters);
+
       Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
